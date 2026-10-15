@@ -1,9 +1,17 @@
+/*
+ * Adelaide University COMP3011 Assignment 2.
+ *
+ * Authors:
+ *   1. Kimchhay Leng (a2942784)
+ *
+ * Copyright 2026 <Kimchhay Leng>
+ */
 package comp3011;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
-/* 
+/**
  * The frame processing effects that can be requested on the video player's command line.
  * 
  * Each option binds a single-letter short name (e.g. {@code -s}) and a long name
@@ -62,26 +70,26 @@ public enum FrameProcessorOption {
 		return description;
 	}
 	
-	/*
+	/**
 	 * Creates a new, independent instance of this option's frame processor.
 	 */
 	public FrameProcessor createProcessor() {
 		return factory.get();
 	}
 	
-	/*
+	/**
 	 * Returns this option formatted as a line of the help text, e.g. 
 	 * {@code " -n, --number-frames  Render the frame number onto each frame"}.
 	 */
 	public String toHelpLine() {
-		return String.format(" -%c, --%-" + LONG_NAME_COLUMN_WIDTH + "s%S",  shortName, longName,
+		return String.format("  -%c, --%-" + LONG_NAME_COLUMN_WIDTH + "s%s",  shortName, longName,
 				description);
 	}
 	
-	/*
+	/**
 	 * Finds the option with the given short name (the letter after a single '-').
 	 */
-	public static Optional<FrameProcessorOption> forShortName(char shortName){
+	public static Optional<FrameProcessorOption> fromShortName(char shortName){
 		for (FrameProcessorOption option: values()) {
 			if (option.shortName == shortName) {
 				return Optional.of(option);
@@ -90,7 +98,7 @@ public enum FrameProcessorOption {
 		return Optional.empty();
 	}
 	
-	/*
+	/**
 	 *  Finds the option with the given long name (the text after '--'). 
 	 */
 	public static Optional<FrameProcessorOption> fromLongName(String longName){

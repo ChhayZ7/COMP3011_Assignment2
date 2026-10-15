@@ -68,5 +68,38 @@ public enum FrameProcessorOption {
 	public FrameProcessor createProcessor() {
 		return factory.get();
 	}
+	
+	/*
+	 * Returns this option formatted as a line of the help text, e.g. 
+	 * {@code " -n, --number-frames  Render the frame number onto each frame"}.
+	 */
+	public String toHelpLine() {
+		return String.format(" -%c, --%-" + LONG_NAME_COLUMN_WIDTH + "s%S",  shortName, longName,
+				description);
+	}
+	
+	/*
+	 * Finds the option with the given short name (the letter after a single '-').
+	 */
+	public static Optional<FrameProcessorOption> forShortName(char shortName){
+		for (FrameProcessorOption option: values()) {
+			if (option.shortName == shortName) {
+				return Optional.of(option);
+			}
+		}
+		return Optional.empty();
+	}
+	
+	/*
+	 *  Finds the option with the given long name (the text after '--'). 
+	 */
+	public static Optional<FrameProcessorOption> fromLongName(String longName){
+		for (FrameProcessorOption option : values()) {
+			if (option.longName.equals(longName)) {
+				return Optional.of(option);
+			}
+		}
+		return Optional.empty();
+	}
 }
 	

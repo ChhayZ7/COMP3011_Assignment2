@@ -4,7 +4,7 @@
  * Authors:
  *   1. Kimchhay Leng (a2942784)
  *
- * Copyright 2026 <Kimchhay Leng>
+ * Copyright 2026 Kimchhay Leng
  */
 package comp3011;
 

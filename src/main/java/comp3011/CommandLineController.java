@@ -14,7 +14,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -168,7 +167,7 @@ public class CommandLineController {
     		if (option.isPresent()) {
     			frameProcessorOptions.add(option.get());
     		} else {
-    			errorMessage = "Unkown option: " + optionText;
+    			errorMessage = "Unknown option: " + optionText;
     		}
     }
 

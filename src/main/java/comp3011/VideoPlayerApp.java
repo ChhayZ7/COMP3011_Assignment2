@@ -45,7 +45,8 @@ public class VideoPlayerApp extends Application {
 
         controller = new VideoPlayerController(
                 commandLineController.isAudioRequested(),
-                this::setVideoSize);
+                this::setVideoSize,
+                createFrameProcessors());
 
         Scene scene = new Scene(controller.getView().getRoot());
         controller.installKeyboardShortcuts(scene);
@@ -61,6 +62,12 @@ public class VideoPlayerApp extends Application {
         stage.setOnCloseRequest(_ -> controller.shutdown());
 
         playVideo();
+    }
+    
+    private List<FrameProcessor> createFrameProcessors(){
+    		return commandLineController.getFrameProcessorOptions().stream()
+    				.map(FrameProcessorOption::createProcessor)
+    				.toList();
     }
 
     private void moveToSelectedScreen(Stage stage) {

@@ -194,7 +194,7 @@ public class CommandLineController {
         		System.out.println(option.toHelpLine());
         }
         System.out.println();
-        System.out.println("Frame processors are applied in command-line order and maybe repeated.");
+        System.out.println("Frame processors are applied in command-line order and may be repeated.");
         System.out.println("Example: -nssnfwyvdjmbp numbers, scratches twice, numbers again, flickers,");
         System.out.println("converts, warms, vignettes, dusts, jitters, mottles, bleeds, then peppers.");
     }

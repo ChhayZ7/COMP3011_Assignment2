@@ -4,7 +4,7 @@
  * 
  * Authors:
  *   1. Simon Ratcliffe, in collaboration with GPT-5.6 Terra
- *   2. <student name and student number insert here upon modification>
+ *   2. Kimchhay Leng (a2942784)
  *
  * Copyright 2026 Simon Ratcliffe
  */
@@ -31,6 +31,11 @@ import org.bytedeco.javacv.Frame;
  * {@link VideoPlayerModel} singleton schedules when the resulting audio is
  * written and owns the AudioPlayer.
  * </p>
+ * 
+ * <p>
+ * Threading: {@link #copySamples(Frame)} is static and keeps no state, so the decoder thread can call it while the
+ * JavaFX thread writes to the output line. Every other method is only called on the JavaFX thread.
+ * </p>
  */
 public class AudioPlayer implements AutoCloseable {
     private static final long WRITE_TRACE_THRESHOLD_NS = 2_000_000L;
@@ -56,14 +61,7 @@ public class AudioPlayer implements AutoCloseable {
             return new byte[0];
         }
 
-        int byteCount = copySamplesToOutputBuffer(frame);
-        if (byteCount <= 0) {
-            return new byte[0];
-        }
-
-        byte[] samples = new byte[byteCount];
-        System.arraycopy(outputBuffer, 0, samples, 0, byteCount);
-        return samples;
+        return interleavedSamples(frame);
     }
 
     public int write(byte[] samples, int offset, int length) {
@@ -124,61 +122,89 @@ public class AudioPlayer implements AutoCloseable {
 
     // This is a little tedious but handles channel interleaved stereo audio (normal) and also 'packed' audio where
     // there is a chunk of left speaker followed by a chunk of right speaker (unusual, and needs conversion).
-    private int copySamplesToOutputBuffer(Frame frame) {
-        Buffer[] samples = frame.samples;
-        int channels = frame.audioChannels;
-
-        if (channels > 1 && samples.length == channels && samples[0] instanceof ShortBuffer) {
-            ShortBuffer[] planarSamples = new ShortBuffer[channels];
-            int sampleCount = Integer.MAX_VALUE;
-
-            for (int channel = 0; channel < channels; channel++) {
-                if (!(samples[channel] instanceof ShortBuffer channelSamples)) {
-                    return 0;
-                }
-                planarSamples[channel] = channelSamples.duplicate();
-                sampleCount = Math.min(sampleCount, planarSamples[channel].remaining());
-            }
-
-            ensureOutputBufferCapacity(sampleCount * channels * Short.BYTES);
-            return copyPlanarSamples(planarSamples, sampleCount);
-        }
-
-        if (samples[0] instanceof ShortBuffer packedSamples) {
-            ShortBuffer source = packedSamples.duplicate();
-            ensureOutputBufferCapacity(source.remaining() * Short.BYTES);
-            return copyPackedSamples(source);
-        }
-
-        return 0;
+    private static byte[] interleavedSamples(Frame frame) {
+    		Buffer[] samples = frame.samples;
+    		int channels = frame.audioChannels;
+    		
+    		if(channels > 1 && samples.length == channels && samples[0] instanceof ShortBuffer) {
+    			ShortBuffer[] planarSamples = new ShortBuffer[channels];
+    			int sampleCount = Integer.MAX_VALUE;
+    			
+    			for (int channel = 0; channel < channels; channel++) {
+    				if (!(samples[channel] instanceof ShortBuffer channelSamples)) {
+    					return new byte[0];
+    				}
+    				planarSamples[channel] = channelSamples.duplicate();
+    				sampleCount = Math.min(sampleCount, planarSamples[channel].remaining());
+    			}
+    			
+    			return copyPlanarSamples(planarSamples, sampleCount);
+    		}
+    		
+    		if (samples[0] instanceof ShortBuffer packedSamples) {
+    			return copyPackedSamples(packedSamples.duplicate());
+    		}
+    		
+    		return new byte[0];
     }
+    
+//    private int copySamplesToOutputBuffer(Frame frame) {
+//        Buffer[] samples = frame.samples;
+//        int channels = frame.audioChannels;
+//
+//        if (channels > 1 && samples.length == channels && samples[0] instanceof ShortBuffer) {
+//            ShortBuffer[] planarSamples = new ShortBuffer[channels];
+//            int sampleCount = Integer.MAX_VALUE;
+//
+//            for (int channel = 0; channel < channels; channel++) {
+//                if (!(samples[channel] instanceof ShortBuffer channelSamples)) {
+//                    return 0;
+//                }
+//                planarSamples[channel] = channelSamples.duplicate();
+//                sampleCount = Math.min(sampleCount, planarSamples[channel].remaining());
+//            }
+//
+//            ensureOutputBufferCapacity(sampleCount * channels * Short.BYTES);
+//            return copyPlanarSamples(planarSamples, sampleCount);
+//        }
+//
+//        if (samples[0] instanceof ShortBuffer packedSamples) {
+//            ShortBuffer source = packedSamples.duplicate();
+//            ensureOutputBufferCapacity(source.remaining() * Short.BYTES);
+//            return copyPackedSamples(source);
+//        }
+//
+//        return 0;
+//    }
 
-    private int copyPackedSamples(ShortBuffer source) {
+    private static byte[] copyPackedSamples(ShortBuffer source) {
+    		byte[] output = new byte[source.remaining() * Short.BYTES];
         int outputIndex = 0;
         while (source.hasRemaining()) {
             short sample = source.get();
-            outputBuffer[outputIndex++] = (byte) (sample & 0xff);
-            outputBuffer[outputIndex++] = (byte) ((sample >> 8) & 0xff);
+            output[outputIndex++] = (byte) (sample & 0xff);
+            output[outputIndex++] = (byte) ((sample >> 8) & 0xff);
         }
-        return outputIndex;
+        return output;
     }
 
-    private int copyPlanarSamples(ShortBuffer[] planarSamples, int sampleCount) {
+    private static byte[] copyPlanarSamples(ShortBuffer[] planarSamples, int sampleCount) {
+    		byte[] output = new byte[sampleCount * planarSamples.length * Short.BYTES];
         int outputIndex = 0;
         for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
             for (ShortBuffer channelSamples : planarSamples) {
                 short sample = channelSamples.get();
-                outputBuffer[outputIndex++] = (byte) (sample & 0xff);
-                outputBuffer[outputIndex++] = (byte) ((sample >> 8) & 0xff);
+                output[outputIndex++] = (byte) (sample & 0xff);
+                output[outputIndex++] = (byte) ((sample >> 8) & 0xff);
             }
         }
-        return outputIndex;
+        return output;
     }
 
-    private void ensureOutputBufferCapacity(int byteCount) {
-        if (outputBuffer.length < byteCount) {
-            outputBuffer = new byte[byteCount];
-        }
-    }
+//    private void ensureOutputBufferCapacity(int byteCount) {
+//        if (outputBuffer.length < byteCount) {
+//            outputBuffer = new byte[byteCount];
+//        }
+//    }
 
 }

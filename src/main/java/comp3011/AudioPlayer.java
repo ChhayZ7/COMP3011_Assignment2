@@ -56,7 +56,7 @@ public class AudioPlayer implements AutoCloseable {
         warmUpLine();
     }
 
-    public byte[] copySamples(Frame frame) {
+    public static byte[] copySamples(Frame frame) {
         if (frame.samples == null || frame.samples.length == 0) {
             return new byte[0];
         }

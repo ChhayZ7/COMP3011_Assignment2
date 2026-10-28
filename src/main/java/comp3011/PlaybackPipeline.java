@@ -16,8 +16,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -51,7 +49,7 @@ import org.bytedeco.javacv.Frame;
  * only see the queues and the generation counter.
  * </p>
  */
-public class PlaybackPipeline {
+final class PlaybackPipeline {
 	private static final int DISPLAY_QUEUE_CAPACITY = 3;
 	private static final int SPARE_POOLED_FRAMES = 3;
 	private static final long STOP_TIMEOUT_MS = 2_000;
@@ -91,6 +89,7 @@ public class PlaybackPipeline {
 			BlockingQueue<PipelineFrame> output = new LinkedBlockingQueue<>();
 			ProcessorStage stage = new ProcessorStage(processor, input, output, generation::get, errorHandler);
 			threads.add(new Thread(stage, "effect-" + (i + 1) + "-" + processor.getClass().getSimpleName()));
+			input = output;
 		}
 		
 		ImageConverterStage converter = new ImageConverterStage(input, displayFrames, generation::get, errorHandler);

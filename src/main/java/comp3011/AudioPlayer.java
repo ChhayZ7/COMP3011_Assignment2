@@ -42,7 +42,6 @@ public class AudioPlayer implements AutoCloseable {
     private static final int AUDIO_WARMUP_BYTES = 4096;
 
     private SourceDataLine line; // Java Sound's audio-output interface - for us a destination, not a source.
-    private byte[] outputBuffer = new byte[0];
 
     public void open(int sampleRate, int channels) throws LineUnavailableException {
         if (sampleRate <= 0 || channels <= 0) {
@@ -147,35 +146,6 @@ public class AudioPlayer implements AutoCloseable {
     		
     		return new byte[0];
     }
-    
-//    private int copySamplesToOutputBuffer(Frame frame) {
-//        Buffer[] samples = frame.samples;
-//        int channels = frame.audioChannels;
-//
-//        if (channels > 1 && samples.length == channels && samples[0] instanceof ShortBuffer) {
-//            ShortBuffer[] planarSamples = new ShortBuffer[channels];
-//            int sampleCount = Integer.MAX_VALUE;
-//
-//            for (int channel = 0; channel < channels; channel++) {
-//                if (!(samples[channel] instanceof ShortBuffer channelSamples)) {
-//                    return 0;
-//                }
-//                planarSamples[channel] = channelSamples.duplicate();
-//                sampleCount = Math.min(sampleCount, planarSamples[channel].remaining());
-//            }
-//
-//            ensureOutputBufferCapacity(sampleCount * channels * Short.BYTES);
-//            return copyPlanarSamples(planarSamples, sampleCount);
-//        }
-//
-//        if (samples[0] instanceof ShortBuffer packedSamples) {
-//            ShortBuffer source = packedSamples.duplicate();
-//            ensureOutputBufferCapacity(source.remaining() * Short.BYTES);
-//            return copyPackedSamples(source);
-//        }
-//
-//        return 0;
-//    }
 
     private static byte[] copyPackedSamples(ShortBuffer source) {
     		byte[] output = new byte[source.remaining() * Short.BYTES];
@@ -200,11 +170,4 @@ public class AudioPlayer implements AutoCloseable {
         }
         return output;
     }
-
-//    private void ensureOutputBufferCapacity(int byteCount) {
-//        if (outputBuffer.length < byteCount) {
-//            outputBuffer = new byte[byteCount];
-//        }
-//    }
-
 }

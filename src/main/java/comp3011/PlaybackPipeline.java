@@ -99,6 +99,7 @@ final class PlaybackPipeline {
 	void start() {
 		for (Thread thread: threads) {
 			thread.setDaemon(true);
+			thread.setPriority(Thread.NORM_PRIORITY - 1);
 			thread.start();
 		}
 	}

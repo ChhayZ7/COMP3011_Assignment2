@@ -98,21 +98,6 @@ public class CommandLineController {
         		} else {
         			videoFiles.add(arg);
         		}
-//            if ("-h".equals(arg) || "--help".equals(arg)) {
-//                helpRequested = true;
-//            } else if ("-a".equals(arg) || "--audio".equals(arg)) {
-//                audioRequested = true;
-//            } else if ("-x".equals(arg) || "--maximise".equals(arg)) {
-//                maximiseRequested = true;
-//            } else if ("-1".equals(arg) || "--monitor-1".equals(arg)) {
-//                setDisplayId(1);
-//            } else if ("-2".equals(arg) || "--monitor-2".equals(arg)) {
-//                setDisplayId(2);
-//            } else if (arg.startsWith("-")) {
-//                errorMessage = "Unknown option: " + arg;
-//            } else {
-//                videoFiles.add(arg);
-//            }
         }
 
         if (videoFiles.size() > 1) {

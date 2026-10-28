@@ -13,7 +13,7 @@ package comp3011;
  * thread touches the grabber, so seeks are sent to it rather than performed directly. Frames decoded after the seek
  * carry the request's generation.
  */
-public record SeekRequest(
+record SeekRequest(
 		long generation,
 		long timestampUs) {
 }

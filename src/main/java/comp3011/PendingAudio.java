@@ -2,7 +2,8 @@
  * Adelaide University COMP3011 Assignment 2.
  *
  * Authors:
- *   1. Kimchhay Leng (a2942784)
+ * 	 1. Simon Ratcliffe, in collaboration with GPT-5.6 Terra
+ *   2. Kimchhay Leng (a2942784)
  *
  * Copyright 2026 Kimchhay Leng
  */
